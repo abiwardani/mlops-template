@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+message Input {
+    repeated string list_site_id = 1;
+    repeated int32 list_content_id = 2;
+    repeated string list_category = 3;
+    repeated int32 list_price = 4;
+    repeated int32 list_site_prod_trx = 5;
+    repeated int32 list_site_prod_reorder_trx = 6;
+    repeated int32 list_num_package_purchased = 7;
+    repeated int32 list_site_trx = 8;
+    repeated int32 list_site_reorder_trx = 9;
+    repeated int32 list_num_msisdn_purchaser = 10;
+    repeated int32 list_prod_trx = 11;
+    repeated int32 list_prod_reorder_trx = 12;
+}
+
+message Output {
+    repeated int32 list_label = 1;
+}
+
+service Producrec {
+    rpc predict(Input) returns (Output) {}
+}
