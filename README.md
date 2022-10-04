@@ -28,6 +28,9 @@ The Docker system is composed of the following containers:
 
 `https://github.com/abiwardani/mlops-template`
 
+- Add an ENV file containing the following line
+`AIRFLOW_UID=50000`
+
 2. Build the images
 
 `docker build airflow_mlflow -f Dockerfile`
