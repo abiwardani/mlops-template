@@ -1,122 +1,76 @@
-# producrec-mlops
+# MLOps Template
 
 ## Overview
 
-This is your new Kedro project, which was generated using `Kedro 0.18.1`.
+An MLOps system using Apache Airflow orchestration, MLflow model logging and registry, Evidently monitoring, and gRPC serving for model experimentation, selection, deploying, and maintainance ran on a Docker environment.
 
-Take a look at the [Kedro documentation](https://kedro.readthedocs.io) to get started.
+## Services
 
-## Rules and guidelines
+The Docker system is composed of the following containers:
+- Airflow init
+  - Used to initialize the Airflow environment
+- Postgres
+  - Used as Airflow's database management system
+- Airflow webserver
+  - Web UI for accessing Airflow features
+- Airflow triggerer
+  - Service for communication between client-side webserver and server-side scheduler
+- Airflow scheduler
+  - Main airflow worker for running DAG tasks
+- MLflow webserver
+  - Web UI for viewing MLflow registry
+- MLflow model server
+  - Container for serving MLflow model
 
-In order to get the best out of the template:
+## How to run
 
-* Don't remove any lines from the `.gitignore` file we provide
-* Make sure your results can be reproduced by following a [data engineering convention](https://kedro.readthedocs.io/en/stable/faq/faq.html#what-is-data-engineering-convention)
-* Don't commit data to your repository
-* Don't commit any credentials or your local configuration to your repository. Keep all your credentials and local configuration in `conf/local/`
+1. Clone the repository
 
-## How to install dependencies
+`https://github.com/abiwardani/mlops-template`
 
-Declare any dependencies in `src/requirements.txt` for `pip` installation and `src/environment.yml` for `conda` installation.
+2. Build the images
 
-To install them, run:
+`docker build airflow_mlflow -f Dockerfile`
 
-```
-pip install -r src/requirements.txt
-```
+`docker build mlflow-server -f mlflow-server.dockerfile`
 
-## How to run your Kedro pipeline
+3. Run the containers
 
-You can run your Kedro project with:
+`docker-compose -f docker-compose.yaml up -d`
 
-```
-kedro run
-```
+4. Install Evidently
 
-## How to test your Kedro project
+- In webserver container:
+`docker exec -it <airflow-webserver> /bin/bash`
+`python -m pip install --user --no-index --find-links /opt/airflow/data/artifacts evidently==0.1.54.dev0`
 
-Have a look at the file `src/tests/test_run.py` for instructions on how to write your tests. You can run your tests as follows:
+- In scheduler container:
+`docker exec -it <airflow-scheduler> /bin/bash`
+`python -m pip install --user --no-index --find-links /opt/airflow/data/artifacts evidently==0.1.54.dev0`
 
-```
-kedro test
-```
+5. Open Airflow web UI and login
 
-To configure the coverage threshold, go to the `.coveragerc` file.
+`http:<host-ip-address>:8080`
+
+6. Open Admin -> Connections
+
+- Connection Id: `postgres_default`
+- Connection Type: `Postgres`
+- Host: `postgres`
+- Schema: `airflow`
+- Login: `airflow`
+- Password: `<airflow-password>` (default: airflow)
+
+7. Test DAG: ml_pipeline
+
+8. Test DAG: monitoring_pipeline
 
 ## Project dependencies
 
-To generate or update the dependency requirements for your project:
+The project runs on Docker with Python.
 
-```
-kedro build-reqs
-```
+## Author
 
-This will `pip-compile` the contents of `src/requirements.txt` into a new file `src/requirements.lock`. You can see the output of the resolution by opening `src/requirements.lock`.
+Airflow ML Pipeline schema from NicoloAlbanese [https://github.com/NicoloAlbanese/airflow-ml-pipeline-mvp]
 
-After this, if you'd like to update your project requirements, please update `src/requirements.txt` and re-run `kedro build-reqs`.
-
-[Further information about project dependencies](https://kedro.readthedocs.io/en/stable/kedro_project_setup/dependencies.html#project-specific-dependencies)
-
-## How to work with Kedro and notebooks
-
-> Note: Using `kedro jupyter` or `kedro ipython` to run your notebook provides these variables in scope: `context`, `catalog`, and `startup_error`.
->
-> Jupyter, JupyterLab, and IPython are already included in the project requirements by default, so once you have run `pip install -r src/requirements.txt` you will not need to take any extra steps before you use them.
-
-### Jupyter
-To use Jupyter notebooks in your Kedro project, you need to install Jupyter:
-
-```
-pip install jupyter
-```
-
-After installing Jupyter, you can start a local notebook server:
-
-```
-kedro jupyter notebook
-```
-
-### JupyterLab
-To use JupyterLab, you need to install it:
-
-```
-pip install jupyterlab
-```
-
-You can also start JupyterLab:
-
-```
-kedro jupyter lab
-```
-
-### IPython
-And if you want to run an IPython session:
-
-```
-kedro ipython
-```
-
-### How to convert notebook cells to nodes in a Kedro project
-You can move notebook code over into a Kedro project structure using a mixture of [cell tagging](https://jupyter-notebook.readthedocs.io/en/stable/changelog.html#release-5-0-0) and Kedro CLI commands.
-
-By adding the `node` tag to a cell and running the command below, the cell's source code will be copied over to a Python file within `src/<package_name>/nodes/`:
-
-```
-kedro jupyter convert <filepath_to_my_notebook>
-```
-> *Note:* The name of the Python file matches the name of the original notebook.
-
-Alternatively, you may want to transform all your notebooks in one go. Run the following command to convert all notebook files found in the project root directory and under any of its sub-folders:
-
-```
-kedro jupyter convert --all
-```
-
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can run `kedro activate-nbstripout`. This will add a hook in `.git/config` which will run `nbstripout` before anything is committed to `git`.
-
-> *Note:* Your output cells will be retained locally.
-
-## Package your Kedro project
-
-[Further information about building project documentation and packaging your project](https://kedro.readthedocs.io/en/stable/tutorial/package_a_project.html)
+Muhammad Rifat Abiwardani
