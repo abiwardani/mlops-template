@@ -2,7 +2,7 @@
 
 ## Overview
 
-An MLOps system using Apache Airflow orchestration, MLflow model logging and registry, Evidently monitoring, and gRPC serving for model experimentation, selection, deploying, and maintainance ran on a Docker environment.
+An MLOps system using Apache Airflow orchestration, MLflow model logging and registry, Evidently monitoring, and gRPC serving for model experimentation, selection, deploying, and maintenance ran on a Docker environment.
 
 ## Services
 
