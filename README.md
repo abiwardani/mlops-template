@@ -71,6 +71,6 @@ The project runs on Docker with Python.
 
 ## Author
 
-Airflow ML Pipeline schema from NicoloAlbanese [https://github.com/NicoloAlbanese/airflow-ml-pipeline-mvp]
+Airflow ML Pipeline schema from [NicoloAlbanese](https://github.com/NicoloAlbanese/airflow-ml-pipeline-mvp)
 
 Muhammad Rifat Abiwardani
