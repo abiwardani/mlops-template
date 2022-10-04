@@ -11,8 +11,10 @@ conf/**/*credentials*
 
 # ignore everything in the following folders
 logs/**
+containers/**
 
 # except their sub-folders
+!data/**/
 !logs/**/
 
 # also keep all .gitkeep files

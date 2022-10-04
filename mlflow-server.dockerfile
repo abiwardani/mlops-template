@@ -1,5 +1,4 @@
 FROM python:3.7.13
-ENV ACCEPT_EULA Y
 
 # Env & Arg variables
 ARG USERNAME=pythonssh
@@ -28,6 +27,9 @@ RUN apt purge -y whois && apt -y autoremove && apt -y autoclean && apt -y clean
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Set permissions /etc/ssh
+RUN chmod -r 600 /etc/ssh
+
 # Copy the sshd config file
 COPY sshd_config /etc/ssh/sshd_config
 RUN chmod +x /etc/ssh/sshd_config
@@ -40,8 +42,7 @@ USER root
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y git \
-    && apt-get install -y lsof \
-    && apt-get install -y psmisc \
+    && apt-get install lsof \
     && mkdir -p /opt/airflow/mlruns
 COPY requirements.txt /tmp/requirements.txt
 RUN python3 -m pip install -r /tmp/requirements.txt

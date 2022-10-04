@@ -12,6 +12,7 @@ from datetime import datetime
 
 from monitoring.monitor_model import monitor_model
 from monitoring.branch_monitoring import branch_monitoring
+from monitoring.insert_evaluation_results import insert_evaluation_results
 
 default_args = {
     'owner': 'Muhammad Rifat Abiwardani',
@@ -55,10 +56,10 @@ with DAG(
     with TaskGroup('reporting') as reporting:
 
         # task: 3.1
-        inserting_evaluation_results = PostgresOperator(
+        inserting_evaluation_results = PythonOperator(
             task_id='inserting_evaluation_results',
-            postgres_conn_id='postgres_default',
-            sql='sql/insert_evaluation_results.sql'
+            python_callable=insert_evaluation_results,
+            do_xcom_push=True
         )
 
     # task: 4
@@ -78,12 +79,17 @@ with DAG(
             trigger_dag_id='ml_pipeline',
         )
 
+        # # task: 5.a.2
+        # sending_notification = EmailOperator(
+        #     task_id='sending_notification',
+        #     to='abi.wardani85@gmail.com',
+        #     subject=f'PRODUCREC_MONITORING_{datetime.now()}',
+        #     html_content="{{ task_instance.xcom_pull(task_ids='data_and_model_evaluation.monitoring_model', key='report_message') }}"
+        # )
+
         # task: 5.a.2
-        sending_notification = EmailOperator(
-            task_id='sending_notification',
-            to='abi.wardani85@gmail.com',
-            subject=f'PRODUCREC_MONITORING_{datetime.now()}',
-            html_content="{{ task_instance.xcom_pull(task_ids='data_and_model_evaluation.monitoring_model', key='report_message') }}"
+        sending_notification = EmptyOperator(
+            task_id='sending_notification'
         )
 
         # task: 5.b
@@ -93,4 +99,4 @@ with DAG(
 
         retraining >> sending_notification
 
-    data_and_model_evaluation >> branching_monitoring >> evaluation_result_handling
+    preparing_data >> data_and_model_evaluation >> reporting >> branching_monitoring >> evaluation_result_handling

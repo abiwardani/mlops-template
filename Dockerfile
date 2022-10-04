@@ -1,6 +1,5 @@
 FROM apache/airflow:2.3.3
 USER root
-ENV ACCEPT_EULA Y
 RUN apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y git \

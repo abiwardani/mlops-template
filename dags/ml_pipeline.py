@@ -1,4 +1,5 @@
 from platform import python_branch
+
 from airflow.models import DAG
 
 from airflow.operators.python import PythonOperator
@@ -29,7 +30,7 @@ default_args = {
 with DAG(
     "ml_pipeline",
     description='End-to-end ML pipeline example',
-    schedule_interval='@daily',
+    schedule_interval='@monthly',
     default_args=default_args,
         catchup=False) as dag:
 
@@ -43,26 +44,13 @@ with DAG(
             sql='sql/create_batch_data_table.sql'
         )
 
-        # task: 1.2
-        creating_metadata_table = PostgresOperator(
-            task_id="creating_metadata_table",
-            postgres_conn_id='postgres_default',
-            sql='sql/create_metadata_table.sql'
-        )
-
     #task: 2
     with TaskGroup('fetching_data') as fetching_data:
 
-        # task: 2.1
-        initializing_metadata = PythonOperator(
-            task_id="initializing_metadata",
-            python_callable=lambda: None
+        fetching_csv_data = PythonOperator(
+            task_id='fetching_data',
+            python_callable=load_data
         )
-
-        # fetching_data = PythonOperator(
-        #     task_id='fetching_data',
-        #     python_callable=load_data
-        # )
 
     # task: 3
     with TaskGroup('preparing_data') as preparing_data:

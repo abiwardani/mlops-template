@@ -2,14 +2,14 @@ import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine
 
-import utils.ml_pipeline_config as config
+import experiment.ml_pipeline_config as config
 
 db_engine = config.params["db_engine"]
 db_schema = config.params["db_schema"]
 table_name = config.params["db_monitoring_table"]
 
 
-def track_experiments_info(**kwargs):
+def insert_evaluation_results(**kwargs):
     target_drift = float(kwargs['ti'].xcom_pull(
         task_ids="data_and_model_evaluation.monitoring_model", key='target_drift'))
     data_drift = kwargs['ti'].xcom_pull(
