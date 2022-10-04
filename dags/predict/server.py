@@ -6,8 +6,8 @@ from sklearn.preprocessing import LabelEncoder
 
 import mlflow.pyfunc
 
-import producrec_pb2
-import producrec_pb2_grpc
+import producrec_pb2 as producrec_pb2
+import producrec_pb2_grpc as producrec_pb2_grpc
 
 if (len(sys.argv) == 1):
     print("Specify model path. Usage `$ python server.py /path/to/model`")
@@ -53,7 +53,8 @@ class ProducrecModelsServicer(producrec_pb2_grpc.ProducrecServicer):
         return response
 
 
-server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+maxMsgLength = 16 * 1024 * 1024
+server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=[('grpc.max_message_length', maxMsgLength), ('grpc.max_send_message_length', maxMsgLength), ('grpc.max_receive_message_length', maxMsgLength)])
 producrec_pb2_grpc.add_ProducrecServicer_to_server(ProducrecModelsServicer(), server)
 
 print('Starting server. Listening on port 50051.')

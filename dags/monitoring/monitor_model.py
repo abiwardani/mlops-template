@@ -8,7 +8,7 @@ from evidently.model_profile.sections import DataDriftProfileSection, CatTargetD
 from evidently.pipeline.column_mapping import ColumnMapping
 
 from utils.files_util import load_files
-
+from monitoring.client import run_client
 
 def monitor_model(**kwargs):
     import warnings
@@ -55,18 +55,23 @@ def monitor_model(**kwargs):
     # check model performance
 
     # schema 1
-    r0 = requests.post("http://mlflow-service:6000/predict", json=canonical_data[['producrec_dataset_acq.site_id', 'producrec_dataset_acq.content_id', 'producrec_dataset_acq.category', 'producrec_dataset_acq.price', 'producrec_dataset_acq.site_prod_trx', 'producrec_dataset_acq.site_prod_reorder_trx',
-                       'producrec_dataset_acq.num_package_purchased', 'producrec_dataset_acq.site_trx', 'producrec_dataset_acq.site_reorder_trx', 'producrec_dataset_acq.num_msisdn_purchaser', 'producrec_dataset_acq.prod_trx', 'producrec_dataset_acq.prod_reorder_trx']].to_dict(orient='records'))
-    r1 = requests.post("http://mlflow-service:6000/predict", json=new_data[['producrec_dataset_acq.site_id', 'producrec_dataset_acq.content_id', 'producrec_dataset_acq.category', 'producrec_dataset_acq.price', 'producrec_dataset_acq.site_prod_trx', 'producrec_dataset_acq.site_prod_reorder_trx',
-                       'producrec_dataset_acq.num_package_purchased', 'producrec_dataset_acq.site_trx', 'producrec_dataset_acq.site_reorder_trx', 'producrec_dataset_acq.num_msisdn_purchaser', 'producrec_dataset_acq.prod_trx', 'producrec_dataset_acq.prod_reorder_trx']].to_dict(orient='records'))
+    # r0 = requests.post("http://mlflow-service:6000/predict", json=canonical_data[['producrec_dataset_acq.site_id', 'producrec_dataset_acq.content_id', 'producrec_dataset_acq.category', 'producrec_dataset_acq.price', 'producrec_dataset_acq.site_prod_trx', 'producrec_dataset_acq.site_prod_reorder_trx',
+    #                    'producrec_dataset_acq.num_package_purchased', 'producrec_dataset_acq.site_trx', 'producrec_dataset_acq.site_reorder_trx', 'producrec_dataset_acq.num_msisdn_purchaser', 'producrec_dataset_acq.prod_trx', 'producrec_dataset_acq.prod_reorder_trx']].to_dict(orient='records'))
+    # r1 = requests.post("http://mlflow-service:6000/predict", json=new_data[['producrec_dataset_acq.site_id', 'producrec_dataset_acq.content_id', 'producrec_dataset_acq.category', 'producrec_dataset_acq.price', 'producrec_dataset_acq.site_prod_trx', 'producrec_dataset_acq.site_prod_reorder_trx',
+    #                    'producrec_dataset_acq.num_package_purchased', 'producrec_dataset_acq.site_trx', 'producrec_dataset_acq.site_reorder_trx', 'producrec_dataset_acq.num_msisdn_purchaser', 'producrec_dataset_acq.prod_trx', 'producrec_dataset_acq.prod_reorder_trx']].to_dict(orient='records'))
 
-    canon_pred = list(map(int, r0._content.decode('UTF-8')[1:-1].split(',')))
-    new_pred = list(map(int, r0._content.decode('UTF-8')[1:-1].split(',')))
+    r0 = run_client(canonical_data)
+    r1 = run_client(new_data)
+
+    canon_pred = [_ for _ in r0]
+    new_pred = [_ for _ in r1]
 
     acc0 = np.sum(np.array(canon_pred) ==
                   canonical_data['producrec_dataset_acq.reordered'].values)/len(canon_pred)
     acc1 = np.sum(np.array(new_pred) ==
                   new_data['producrec_dataset_acq.reordered'].values)/len(new_pred)
+
+    # tambahan metrics lain
 
     # schema 2
     # r0 = requests.post("http://mlflow-service:6000/predict", json=producrec_data[['producrec_dataset_acq.site_id', 'producrec_dataset_acq.content_id', 'producrec_dataset_acq.category', 'producrec_dataset_acq.price', 'producrec_dataset_acq.site_prod_trx', 'producrec_dataset_acq.site_prod_reorder_trx', 'producrec_dataset_acq.num_package_purchased', 'producrec_dataset_acq.site_trx', 'producrec_dataset_acq.site_reorder_trx', 'producrec_dataset_acq.num_msisdn_purchaser', 'producrec_dataset_acq.prod_trx', 'producrec_dataset_acq.prod_reorder_trx'].iloc[:initial_data_size, :-1]].to_dict(orient='records'))

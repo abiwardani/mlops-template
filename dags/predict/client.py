@@ -3,22 +3,15 @@ import sys
 import pandas as pd
 import os.path
 
-import producrec_pb2
-import producrec_pb2_grpc
-
-channel = grpc.insecure_channel('mlflow-model-server:50051')
-stub = producrec_pb2_grpc.ProducrecStub(channel)
-
-
-if (len(sys.argv) == 1):
-    print("Specify test data path. Usage `$ python server.py /path/to/data`")
-    exit(1)
-elif (not (os.path.isfile(sys.argv[1]))):
-    print("Invalid filepath.")
-    exit(1)
+import producrec_pb2 as producrec_pb2
+import producrec_pb2_grpc as producrec_pb2_grpc
 
 
 def run_client(predict_df):
+    maxMsgLength = 16 * 1024 * 1024
+    channel = grpc.insecure_channel('mlflow-model-server:50051', options=[('grpc.max_message_length', maxMsgLength), ('grpc.max_send_message_length', maxMsgLength), ('grpc.max_receive_message_length', maxMsgLength)])
+    stub = producrec_pb2_grpc.ProducrecStub(channel)
+
     list_site_id = [_ for _ in predict_df["producrec_dataset_acq.site_id"]]
     list_content_id = [_ for _ in predict_df["producrec_dataset_acq.content_id"]]
     list_category = [_ for _ in predict_df["producrec_dataset_acq.category"]]
@@ -41,9 +34,19 @@ def run_client(predict_df):
 
     response = stub.predict(input)
 
-    print(response.list_label)
+    return response.list_label
 
 
-test_data = pd.read_csv(sys.argv[1])
+if (__name__ == "__main__"):
 
-run_client(test_data)
+    if (len(sys.argv) == 1):
+        print("Specify test data path. Usage `$ python server.py /path/to/data`")
+        exit(1)
+    elif (not (os.path.isfile(sys.argv[1]))):
+        print("Invalid filepath.")
+        exit(1)
+    
+    test_data = pd.read_csv(sys.argv[1])
+
+    list_label = run_client(test_data)
+    print(list_label)

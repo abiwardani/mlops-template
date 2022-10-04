@@ -35,10 +35,8 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ./data:/opt/airflow/data
+    - /data/tmp/data:/opt/airflow/data
     - ./models:/opt/airflow/models
-    - ./producrec_dataset_acq.csv:/opt/airflow/data/raw_data.csv
-    - ./producrec_dataset_acq_new.csv:/opt/airflow/data/new_data.csv
     - ./mlruns:/opt/airflow/mlruns
   user: "${AIRFLOW_UID:-50000}:0"
   networks:
@@ -71,7 +69,7 @@ services:
     ports:
       - 8080:8080
     extra_hosts:
-      - "database:10.53.205.174"
+      - "database:<db-host-ip-address"
     healthcheck:
       test:
         [
@@ -103,7 +101,7 @@ services:
       retries: 5
     restart: always
     extra_hosts:
-      - "database:10.53.205.174"
+      - "database:<db-host-ip-address>"
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -247,7 +245,7 @@ services:
       - 1234:1234
       - 50051:50051
     extra_hosts:
-      - "database:10.53.205.174"
+      - "database:<db-host-ip-address>"
     stdin_open: true
     tty: true
     healthcheck:
@@ -261,7 +259,7 @@ services:
       - backend
     volumes:
       - ./mlruns:/opt/airflow/mlruns
-      - ./data:/opt/airflow/data
+      - /data/tmp/data:/opt/airflow/data
       - ./dags:/opt/airflow/dags
       - ./models:/opt/airflow/models
       # - mysql-db-volume:/var/lib/mysql/data
@@ -271,8 +269,6 @@ services:
         condition: service_completed_successfully
 
 networks:
-  frontend:
-    driver: bridge
   backend:
     driver: bridge
 
